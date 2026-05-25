@@ -39,7 +39,17 @@ These skills carry no client-specific names. When adapting, do a project-wide se
 | `<YYYY>` / `<YYYY-MM-DD>` etc. | Date slots for the period at hand | `2025` / `2025-12-31` |
 | `<...>` placeholders inside code | Inline values you'd fill at use time | `<supplier name>`, `<JE-name>` |
 
-Some skills also reference scripts (`scripts/parse_statements.py`, `scripts/extract_fx_rates.sh`, `scripts/export_audit_reports.py`) that aren't included in this repo — those live in the source operating repo and are referenced as one example of the kind of helper you'd write alongside the skills.
+## Helper scripts
+
+Three companion scripts ship in [`scripts/`](scripts/) — referenced from the skills above.
+
+| Script | Purpose |
+|---|---|
+| [`parse_statements.py`](scripts/parse_statements.py) | Parse HSBC bank + credit-card statement PDFs into a unified CSV (`txn_date, description, deposit, withdrawal, balance, fx_*`). Auto-detects format, handles FX continuation lines, can rename PDFs to a canonical `<PREFIX>_YYYYMM.pdf` layout. Requires `pdftotext` (poppler). |
+| [`extract_fx_rates.sh`](scripts/extract_fx_rates.sh) | Pull month-end USD/CNY/EUR-to-HKD rates from monthly HSBC bank statements via rclone + pdftotext + awk, emits TSV. Env-configurable (`REMOTE`, `PREFIX`, `YEARS`). |
+| [`export_audit_reports.py`](scripts/export_audit_reports.py) | Run inside the frappe backend container to export Trial Balance / BS / P&L / AR / GL as CSV with currency precision applied at source (fixes GL running-balance float drift). |
+
+The bank-statement parsing is HSBC-specific (Business Direct + World Business MC formats). Other banks would need their own format detector + parsing functions, but the dataclass shape, CSV output schema, and rename machinery transfer.
 
 ## Assumed setup
 
